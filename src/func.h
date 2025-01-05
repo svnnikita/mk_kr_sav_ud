@@ -1,21 +1,13 @@
 #include <Wire.h> 
 #include <LCD_1602_RUS.h>
 
+// инициализируем дисплей, имеющий 2 строки по 16 символов (16 столбцов) в каждой и с адресом I2C – 0x27
 LCD_1602_RUS lcd(0x27,16,2);
 
-void beginning() {
-    lcd.begin();
-    lcd.clear();
-	lcd.setCursor(0, 0);
-    lcd.print("ТАЙМЕР ДЛЯ");
-  	lcd.setCursor(0, 1);
-	lcd.print("ТРЕНИРОВОК");
-	delay(2000);
-
+void onDisplay(String str1, String str2) {
 	lcd.clear();
 	lcd.setCursor(0, 0);
-	lcd.print("СОСТОЯНИЕ:");
+	lcd.print(str1);
 	lcd.setCursor(0, 1);
-	lcd.print("ГОТОВ К РАБОТЕ");
-	delay(2000);
-}
+	lcd.print(str2);
+} 
