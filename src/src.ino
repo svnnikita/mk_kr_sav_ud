@@ -17,6 +17,7 @@ int flag3 = 0;
 // 2) время одного подхода
 // 3) время паузы между подходами
 int arrayOfParam[3];
+int SEC = arrayOfParam[1];
 
 void setup() {	
 	Serial.begin(9600);
@@ -70,21 +71,21 @@ void loop() {
 		case 'q': 
 			onDisplay("КОЛИЧЕСТВО", "ПОДХОДОВ:");
 			arrayOfParam[0] = Serial.parseInt();
-			lcd.print((int)arrayOfParam[0]);
+			lcd.print(arrayOfParam[0]);
 			delay(delaySec * 2);
 			break;
 		// w + число -- время одного подхода, второе значение в массиве arrayOfParam[]
 		case 'w':
 			onDisplay("ВРЕМЯ ОДНОГО", "ПОДХОДА:");
 			arrayOfParam[1] = Serial.parseInt();
-			lcd.print((int)arrayOfParam[1]);
+			lcd.print(arrayOfParam[1]);
 			delay(delaySec * 2); 
 			break;
 		// e + число -- количество подходов, первое значение в массиве arrayOfParam[]
 		case 'e':
 			onDisplay("ВРЕМЯ", "ПАУЗЫ:");
 			arrayOfParam[2] = Serial.parseInt();
-			lcd.print((int)arrayOfParam[2]);
+			lcd.print(arrayOfParam[2]);
 			delay(delaySec * 2); 
 			break;
 		// на случай, если пользователь введет некорректные данные
@@ -96,9 +97,9 @@ void loop() {
 	}
 
 	// вывод значений массива arrayOfParam[] в последовательный порт
-	//for (int i = 0; i < 3; i++) {
-		//Serial.println(arrayOfParam[i]);
-	//}
+	for (int i = 0; i < 3; i++) {
+		Serial.println(arrayOfParam[i]);
+	}
 
 	// если каждый элемент массива не равен нулю (пользователь ввел 
 	// все необходимые значения), таймер начинает свою работу 
@@ -125,8 +126,8 @@ void loop() {
 	if (millis() - timing > delaySec && flag2 == 1) {
 		timing = millis();
 
-		int SEC = arrayOfParam[1];
-		SEC = SEC + 1;
+		//int SEC = arrayOfParam[1];
+		SEC = SEC - 1;
 		if (SEC = 0) {
 			flag3 = 1;
 			lcd.clear();
@@ -135,7 +136,7 @@ void loop() {
 		} 
 		lcd.clear();
 		lcd.setCursor(0, 0);
-		lcd.print(arrayOfParam[1]);
+		lcd.print(SEC);
 		}
 }
 
