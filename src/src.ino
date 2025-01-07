@@ -12,9 +12,6 @@ int flag1 = 0;
 int flag2 = 0;
 int flag3 = 0;
 
-int SEC = 0;
-int MIN = 0;
-
 // объявляем массив из 3-х значений: 
 // 1) количество подходов
 // 2) время одного подхода
@@ -73,21 +70,21 @@ void loop() {
 		case 'q': 
 			onDisplay("КОЛИЧЕСТВО", "ПОДХОДОВ:");
 			arrayOfParam[0] = Serial.parseInt();
-			lcd.print(arrayOfParam[0]);
+			lcd.print((int)arrayOfParam[0]);
 			delay(delaySec * 2);
 			break;
 		// w + число -- время одного подхода, второе значение в массиве arrayOfParam[]
 		case 'w':
 			onDisplay("ВРЕМЯ ОДНОГО", "ПОДХОДА:");
 			arrayOfParam[1] = Serial.parseInt();
-			lcd.print(arrayOfParam[1]);
+			lcd.print((int)arrayOfParam[1]);
 			delay(delaySec * 2); 
 			break;
 		// e + число -- количество подходов, первое значение в массиве arrayOfParam[]
 		case 'e':
 			onDisplay("ВРЕМЯ", "ПАУЗЫ:");
 			arrayOfParam[2] = Serial.parseInt();
-			lcd.print(arrayOfParam[2]);
+			lcd.print((int)arrayOfParam[2]);
 			delay(delaySec * 2); 
 			break;
 		// на случай, если пользователь введет некорректные данные
@@ -128,16 +125,17 @@ void loop() {
 	if (millis() - timing > delaySec && flag2 == 1) {
 		timing = millis();
 
-		MIN = round((float)arrayOfParam[1] / 60);
-		SEC = ((float)arrayOfParam[1]/60 - MIN) * 60;
-		SEC--;
-		if (SEC < 0) {
-			SEC = 0;
-			MIN--;
+		int SEC = arrayOfParam[1];
+		SEC = SEC + 1;
+		if (SEC = 0) {
+			flag3 = 1;
+			lcd.clear();
+			lcd.setCursor(0, 0);
+			lcd.print("ОТДЫХАЕМ");	
 		} 
 		lcd.clear();
 		lcd.setCursor(0, 0);
-		lcd.print(String(MIN) + " : " + String(SEC));
+		lcd.print(arrayOfParam[1]);
 		}
 }
 
