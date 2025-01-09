@@ -36,7 +36,7 @@ byte flag3 = 0;
 byte flag4 = 0;
 byte flag5 = 0;
 byte flag6 = 0;
-byte flag7 = 0;
+byte flag7 = 1;
 byte flag8 = 0;
 
 // Объявляем массив значений, где: 
@@ -162,25 +162,21 @@ void loop() {
 	}
 
 	// Начало работы таймера. Первый подход
-	if (millis() - timing > oneSec && flag2 == 1 && flag3 == 0 && *pNumOfAppr > 0) {
+	if (millis() - timing > oneSec && flag2 == 1 && flag3 == 0) {
 		timing = millis();
 		onDisplay("РАБОТАЕМ", *pTimeOfAppr);
-
 		*pTimeOfAppr = *pTimeOfAppr - 1;
-
+		
 		if (*pTimeOfAppr == 0) {
+			tone(zummer, freq2, oneSec / 2);
+
 			flag3 = 1;
-		}
-	}
-	
-	// Сигнал паузы.
-	if (millis() - timing > oneSec && *pTimeOfAppr == 0 && flag3 == 1 && flag4 == 0) {
-		tone(zummer, freq2, oneSec / 2);
-		flag4 = 1;
+			flag4 = 1;
+		}		
 	}
 
 	// Начало паузы. 
-	if (millis() - timing > oneSec && *pTimeOfAppr == 0 && flag4 == 1 && flag5 == 0 && *pNumOfAppr > 0) {
+	if (millis() - timing > oneSec && flag4 == 1 && flag5 == 0) {
 		timing = millis();
 		onDisplay("ОТДЫХАЕМ", *pTimeOfPause);
 		
@@ -188,41 +184,31 @@ void loop() {
 
 		// Условие окончания паузы
 		if (*pTimeOfPause == 0) {
+			tone(zummer, freq1, oneSec / 2);
+			
 			*pTimeOfAppr = *pTimeOfAppr + *pTimeOfApprCopy;
 			*pTimeOfPause = *pTimeOfPause + *pTimeOfPauseCopy;
 
-			flag5 = 1; // условие "Начало паузы" больше не выполняется
+			*pNumOfAppr = *pNumOfAppr - 1;
+
+			flag5 = 1;
 		}
 	}
 
-	// Сигнал окончания паузы
-	if (millis() - timing > oneSec && flag5 == 1 && flag6 == 0 && *pNumOfAppr > 0) {
-		tone(zummer, freq1, oneSec / 2);
-		flag2 = 1;
-		flag3 = 0;
-		flag5 = 0;
-
-		*pNumOfAppr--;
-	}
-
-	if (millis() - timing > oneSec && flag6 == 1 && flag7 == 0 && *pNumOfAppr == 0) {
-		flag1 = 0;
-		flag2 = 0;
-		flag3 = 0;			
-		flag4 = 0;
-		flag5 = 0;
-	}
-	/*
-	if (millis() - timing > oneSec && *pNumOfAppr == 0) {
-		//timing = millis();
-		flag1 = 0;
-		flag2 = 0;
-		flag3 = 0;			
-		flag4 = 0;
-		flag5 = 0;
-		flag6 = 0;
+	if (millis() - timing > oneSec && flag5 == 1 && flag6 == 0) {
+		if (*pNumOfAppr > 0) {
+			flag2 = 1;
+			flag3 = 0;
+			flag5 = 0;
 		}
-	//}*/
 
+		if (*pNumOfAppr == 0) {
+			flag1 = 0;
+			flag2 = 0;
+			flag3 = 0;			
+			flag4 = 0;
+			flag5 = 0;
+		}
+	}
 }
 
