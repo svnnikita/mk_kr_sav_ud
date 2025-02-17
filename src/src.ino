@@ -11,22 +11,24 @@ unsigned long timing = 0;
 // Устанавливаем флажки для управления отображением информацией на дисплее
 // и выполнения частей кода:
 int flag1 = 0; 		// Отвечает за отображение приветственных надписей
-byte flag2 = 0; 	// Отвечает за ожидание программы ввода данных
-byte flag3 = 0;		// Отвечает за режим таймера "ПОДХОД"
-byte flag4 = 0; 	// Отвечает за начало паузы между подходами
-byte flag5 = 0;		// Отвечает за проверку условий продолжения таймера
-byte flag6 = 0;		// Аналогично flag5
+boolean flag2 = 0; 	// Отвечает за ожидание программы ввода данных
+boolean flag3 = 0;	// Отвечает за режим таймера "ПОДХОД"
+boolean flag4 = 0; 	// Отвечает за начало паузы между подходами
+boolean flag5 = 0;	// Отвечает за проверку условий продолжения таймера
+boolean flag6 = 0;	// Аналогично flag5
 
-// Объявляем массив значений, где: 
-// элемент 1 -- количество подходов
-// элемент 2 -- время одного подхода
-// элемент 3 -- время паузы между подходами
-unsigned int arrayOfParam[3];
+// Объявляем массив значений, где:
+// элемент 1 -- время подготовки 
+// элемент 2 -- количество подходов
+// элемент 3 -- время одного подхода
+// элемент 4 -- время паузы между подходами
+unsigned int arrayOfParam[4];
 
 // Создаем указатели на каждый элемент массива для управления таймером
-unsigned int* pNumOfAppr = &arrayOfParam[0]; 	// количество подходов
-unsigned int* pTimeOfAppr = &arrayOfParam[1];	// время одного подхода
-unsigned int* pTimeOfPause = &arrayOfParam[2];	// время паузы
+unsigned int* pTimeOfPrep = &arrayOfParam[0];	// время подготовки
+unsigned int* pNumOfAppr = &arrayOfParam[1]; 	// количество подходов
+unsigned int* pTimeOfAppr = &arrayOfParam[2];	// время одного подхода
+unsigned int* pTimeOfPause = &arrayOfParam[3];	// время паузы
 
 // Создаем массив из 2-х элементов и копируем значения элементов 2 и 3  
 // из предыдущего массива для дальнейшего взаимодействия
@@ -79,17 +81,23 @@ void loop() {
 
 	if (millis() - timing > oneSec * 2 && flag1 == 3  && flag2 == 0) {
 		timing = millis();
-		onDisplay("КОЛИЧЕСТВО ПОД", "ХОДОВ: q И ЧИСЛО");
+		onDisplay("ВРЕМЯ ПОДГОТОВКИ", "a И ЧИСЛО");
 		flag1 = 4;
 	}
 
 	if (millis() - timing > oneSec * 2 && flag1 == 4  && flag2 == 0) {
 		timing = millis();
-		onDisplay("ВРЕМЯ ОДНОГО ПОД", "ХОДА: w И ЧИСЛО");
+		onDisplay("КОЛИЧЕСТВО ПОД", "ХОДОВ: q И ЧИСЛО");
 		flag1 = 5;
 	}
 
 	if (millis() - timing > oneSec * 2 && flag1 == 5  && flag2 == 0) {
+		timing = millis();
+		onDisplay("ВРЕМЯ ОДНОГО ПОД", "ХОДА: w И ЧИСЛО");
+		flag1 = 6;
+	}
+
+	if (millis() - timing > oneSec * 2 && flag1 == 6  && flag2 == 0) {
 		timing = millis();
 		onDisplay("ВРЕМЯ ПАУЗЫ:", "e И ЧИСЛО");
 		flag1 = 0;
@@ -99,25 +107,32 @@ void loop() {
 	if (Serial.available() > 1) {
 		char KEY = Serial.read();
 		switch (KEY) {
-		// q + число (сразу после буквы) -- количество подходов, первое значение в массиве arrayOfParam[]
-		case 'q': 
-			onDisplay("КОЛИЧЕСТВО", "ПОДХОДОВ:");
+		// a + число (сразу после буквы) -- время подготовки, первое значение в массиве arrayOfParam[]
+		case 'a': 
+			onDisplay("ВРЕМЯ ПОДГО-", "ТОВКИ:");
 			arrayOfParam[0] = Serial.parseInt();
 			lcd.print(arrayOfParam[0]);
 			delay(oneSec * 2);
 			break;
-		// w + число -- время одного подхода, второе значение в массиве arrayOfParam[]
+		// q + число (сразу после буквы) -- количество подходов, второе значение в массиве arrayOfParam[]
+		case 'q': 
+			onDisplay("КОЛИЧЕСТВО", "ПОДХОДОВ:");
+			arrayOfParam[1] = Serial.parseInt();
+			lcd.print(arrayOfParam[1]);
+			delay(oneSec * 2);
+			break;
+		// w + число -- время одного подхода, третье значение в массиве arrayOfParam[]
 		case 'w':
 			onDisplay("ВРЕМЯ ОДНОГО", "ПОДХОДА:");
-			arrayOfParam[1] = arrayOfParamCopy[0] = Serial.parseInt();
-			lcd.print(arrayOfParam[1]);
+			arrayOfParam[2] = arrayOfParamCopy[0] = Serial.parseInt();
+			lcd.print(arrayOfParam[2]);
 			delay(oneSec * 2); 
 			break;
-		// e + число -- количество подходов, третье значение в массиве arrayOfParam[]
+		// e + число -- количество подходов, четвертое значение в массиве arrayOfParam[]
 		case 'e':
 			onDisplay("ВРЕМЯ", "ПАУЗЫ:");
-			arrayOfParam[2] = arrayOfParamCopy[1] = Serial.parseInt();
-			lcd.print(arrayOfParam[2]);
+			arrayOfParam[3] = arrayOfParamCopy[1] = Serial.parseInt();
+			lcd.print(arrayOfParam[3]);
 			delay(oneSec * 2); 
 			break;
 		// Если пользователь введел некорректные данные
@@ -128,26 +143,34 @@ void loop() {
 		}
 	}
 
+	if (millis() - timing > oneSec && arrayOfParam[0] > 0 && arrayOfParam[1] > 0 && arrayOfParam[2] > 0  && arrayOfParam[3] > 0 && flag2 == 0) {
+		timing = millis();
+		lcd.noBlink();
+		onDisplay("ГОТОВИМСЯ", *pTimeOfPrep);
+		
+		*pTimeOfPrep = *pTimeOfPrep - 1;
+
+		if (*pTimeOfPrep == 0) {
+			tone(zummer, freq1, oneSec / 2);
+			flag2 = 1;
+		}
+	}
+
 	// Если каждый элемент массива не равен нулю (пользователь ввел 
 	// все необходимые значения), таймер начинает свою работу 
-	if (arrayOfParam[0] > 0 && arrayOfParam[1] > 0 && arrayOfParam[2] > 0 && flag2 == 0) {
-		lcd.noBlink();
-		lcd.clear();
-		lcd.setCursor(0, 0);
-		lcd.print("НАЧИНАЕМ!!!");
-		delay(oneSec * 2);
+	//if (flag2 == 1) {
 
-		int j = 0;
-		for ( ; j < 3; j++) {
-			tone(zummer, freq1, oneSec / 2);
-			delay(oneSec);
-		}
+		//int j = 0;
+		//for ( ; j < 3; j++) {
+			//tone(zummer, freq1, oneSec / 2);
+			//delay(oneSec);
+		//}
 
-		if (j = 3) {	
-			tone(zummer, freq2, oneSec / 2);
-		}
-		flag2 = 1;
-	}
+		//if (j = 3) {	
+			//tone(zummer, freq2, oneSec / 2);
+		//}
+		//flag2 = 1;
+	//}
 
 	// Начало работы таймера. Первый подход
 	if (millis() - timing > oneSec && flag2 == 1 && flag3 == 0) {
